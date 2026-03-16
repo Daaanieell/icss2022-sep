@@ -1,18 +1,4 @@
 grammar ICSS;
-//parser
-
-//2do inhoud van een regel
-variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR value;
-
-rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
-
-body: declaration+;
-declaration: property value SEMICOLON;
-
-value: LOWER_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR;
-property: LOWER_IDENT COLON;
-
-
 //--- LEXER: ---
 
 // IF support:
@@ -58,5 +44,30 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER: ---
-stylesheet: EOF;
+stylesheet: content EOF | EOF;
+content: (variable_declaration | rule)*;
+
+//variables
+variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR value SEMICOLON;
+
+//css rules
+rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
+
+body: declaration+;
+declaration: property (expression | value) SEMICOLON;
+
+//TODO: this is mostly dupe of factor..
+value: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE;
+property: LOWER_IDENT COLON;
+
+//expressiosn
+expression: term (add_op term)*;
+term: factor (mult_op factor)*;
+factor: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR;
+
+add_op: '+' | '-';
+mult_op: '*' | '/';
+
+//TODO continue oen level 2/3
+
 
