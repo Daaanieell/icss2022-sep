@@ -32,8 +32,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.8.0</version>
 				<configuration>
-					<source>21</source>
-					<target>21</target>
+					<source>13</source>
+					<target>13</target>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -148,7 +148,5 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<exec.mainClass>nl.han.ica.icss.gui.Main</exec.mainClass>
-		<maven.compiler.source>21</maven.compiler.source>
-		<maven.compiler.target>21</maven.compiler.target>
 	</properties>
 </project>
