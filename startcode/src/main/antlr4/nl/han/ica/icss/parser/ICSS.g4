@@ -1,8 +1,16 @@
 grammar ICSS;
 //parser
 
+//2do inhoud van een regel
+variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR value;
 
+rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
 
+body: declaration+;
+declaration: property value SEMICOLON;
+
+value: LOWER_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR;
+property: LOWER_IDENT COLON;
 
 
 //--- LEXER: ---
