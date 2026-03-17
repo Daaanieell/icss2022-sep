@@ -44,30 +44,30 @@ ASSIGNMENT_OPERATOR: ':=';
 
 
 //--- PARSER: ---
+
 stylesheet: content EOF | EOF;
 content: (variable_declaration | rule)*;
 
-//variables
-variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR value SEMICOLON;
+//variable
+variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 
-//css rules
+//css rule
 rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
 
-body: declaration+;
-declaration: property (expression | value) SEMICOLON;
+body: (declaration | if_statement)*;
+declaration: property expression SEMICOLON;
 
-//TODO: this is mostly dupe of factor..
-value: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE;
 property: LOWER_IDENT COLON;
 
 //expressiosn
 expression: term (add_op term)*;
 term: factor (mult_op factor)*;
-factor: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR;
+factor: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE;
 
-add_op: '+' | '-';
-mult_op: '*' | '/';
+add_op: PLUS | MIN;
+mult_op: MUL;
 
-//TODO continue oen level 2/3
-
+//if statement
+if_statement: IF BOX_BRACKET_OPEN condition BOX_BRACKET_CLOSE OPEN_BRACE body CLOSE_BRACE (ELSE OPEN_BRACE body CLOSE_BRACE)?;
+condition: CAPITAL_IDENT | TRUE | FALSE;
 
