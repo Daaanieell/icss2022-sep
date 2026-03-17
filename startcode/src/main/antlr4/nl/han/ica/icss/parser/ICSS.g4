@@ -1,8 +1,5 @@
 grammar ICSS;
 
-@header {
-    package nl.han.ica.icss.parser;
-}
 //--- LEXER: ---
 
 // IF support:
@@ -49,21 +46,19 @@ ASSIGNMENT_OPERATOR: ':=';
 
 //--- PARSER: ---
 
-stylesheet: content EOF | EOF;
-content: (variable_declaration | css_rule)*;
+stylesheet: (variable_assignment | stylerule)* EOF;
 
 //variable
-variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
+variable_assignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 
 //css rule
-css_rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
+stylerule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE;
 
-body: (declaration | if_statement)*;
 declaration: property expression SEMICOLON;
 
 property: LOWER_IDENT COLON;
 
-//expressiosn
+//expressions
 expression: term (add_op term)*;
 term: factor (mult_op factor)*;
 factor: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE;
@@ -72,6 +67,5 @@ add_op: PLUS | MIN;
 mult_op: MUL;
 
 //if statement
-if_statement: IF BOX_BRACKET_OPEN condition BOX_BRACKET_CLOSE OPEN_BRACE body CLOSE_BRACE (ELSE OPEN_BRACE body CLOSE_BRACE)?;
-condition: CAPITAL_IDENT | TRUE | FALSE;
-
+if_clause: IF BOX_BRACKET_OPEN (CAPITAL_IDENT | TRUE | FALSE) BOX_BRACKET_CLOSE OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE else_clause?;
+else_clause: ELSE OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE;
