@@ -12,7 +12,6 @@ import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
 import nl.han.ica.icss.ast.selectors.IdSelector;
 import nl.han.ica.icss.ast.selectors.TagSelector;
-import nl.han.ica.icss.gen.ICSSBaseListener;
 
 /**
  * This class extracts the ICSS Abstract Syntax Tree from the Antlr Parse tree.

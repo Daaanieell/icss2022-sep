@@ -1,4 +1,8 @@
 grammar ICSS;
+
+@header {
+    package nl.han.ica.icss.parser;
+}
 //--- LEXER: ---
 
 // IF support:
@@ -46,13 +50,13 @@ ASSIGNMENT_OPERATOR: ':=';
 //--- PARSER: ---
 
 stylesheet: content EOF | EOF;
-content: (variable_declaration | rule)*;
+content: (variable_declaration | css_rule)*;
 
 //variable
 variable_declaration: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 
 //css rule
-rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
+css_rule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE body CLOSE_BRACE;
 
 body: (declaration | if_statement)*;
 declaration: property expression SEMICOLON;
