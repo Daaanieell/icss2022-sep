@@ -1,8 +1,5 @@
 package nl.han.ica.icss.parser;
 
-import java.util.Stack;
-
-
 import nl.han.ica.datastructures.HANStack;
 import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
@@ -27,6 +24,8 @@ public class ASTListener extends ICSSBaseListener {
 
 	public ASTListener() {
 		ast = new AST();
+
+		//TODO: waar is dit voor?
 		//currentContainer = new HANStack<>();
 	}
     public AST getAST() {
@@ -39,20 +38,30 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override
-	public void exitStylesheet(ICSSParser.StylesheetContext ctx) {
-		ast.root = (Stylesheet) currentContainer.pop();
+	public void enterVariable_assignment(ICSSParser.Variable_assignmentContext ctx) {
+		VariableAssignment assignment = new VariableAssignment();
+		assignment.addChild(new VariableReference(ctx.CAPITAL_IDENT().getText()));
+		currentContainer.push(assignment);
 	}
 
-	//TODO
 	@Override
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
-		super.enterStylerule(ctx);
+		Stylerule stylerule = new Stylerule();
+
+		if (ctx.LOWER_IDENT() != null) {
+			stylerule.addChild(new TagSelector(ctx.LOWER_IDENT().getText()));
+		} else if (ctx.ID_IDENT() != null) {
+			stylerule.addChild(new IdSelector(ctx.ID_IDENT().getText()));
+		} else if (ctx.CLASS_IDENT() != null) {
+			stylerule.addChild(new ClassSelector(ctx.CLASS_IDENT().getText()));
+		}
+
+		currentContainer.push(stylerule);
 	}
 
 	@Override
 	public void enterDeclaration(ICSSParser.DeclarationContext ctx) {
-		Declaration declaration = new Declaration();
-		currentContainer.push(declaration);
+		currentContainer.push(new Declaration());
 	}
 
 	@Override
@@ -61,5 +70,37 @@ public class ASTListener extends ICSSBaseListener {
 		PropertyName propertyName = new PropertyName(ctx.LOWER_IDENT().getText());
 		parent.addChild(propertyName);
 	}
+
+	@Override
+	public void exitExpression(ICSSParser.ExpressionContext ctx) {
+		//TODO
+	}
+
+	@Override
+	public void exitVariable_assignment(ICSSParser.Variable_assignmentContext ctx) {
+		ASTNode variable = currentContainer.pop();
+		ASTNode parent = currentContainer.peek();
+		parent.addChild(variable);
+	}
+
+	@Override
+	public void exitStylerule(ICSSParser.StyleruleContext ctx) {
+		ASTNode stylerule = currentContainer.pop();
+		ASTNode parent = currentContainer.peek();
+		parent.addChild(stylerule);
+	}
+
+	@Override
+	public void exitDeclaration(ICSSParser.DeclarationContext ctx) {
+		ASTNode declaration = currentContainer.pop();
+		ASTNode parent = currentContainer.peek();
+		parent.addChild(declaration);
+	}
+
+	@Override
+	public void exitStylesheet(ICSSParser.StylesheetContext ctx) {
+		ast.root = (Stylesheet) currentContainer.pop();
+	}
+
 
 }
