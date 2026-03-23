@@ -1,66 +1,68 @@
 package nl.han.ica.datastructures;
 
-import java.util.Iterator;
+public class HANLinkedList<T> implements IHANLinkedList<T> {
 
-public class HANLinkedList<T> implements IHANLinkedList {
-        private Object[] array;
+    private static final int DEFAULT_CAPACITY = 16;
 
-        @Override
-        public void addFirst(Object value) {
-//        Object[] previousArray = array;
-            array[0] = value;
+    private Object[] data;
+    private int size;
 
-            for (int i = array.length-1; i > 0; i--) {
-                array[i+1] = array[i];
-            }
-        }
-
-        @Override
-        public void clear() {
-            array[0] = null;
-//        first.setNext(null);
-        }
-
-        @Override
-        public void insert(int index, Object value) {
-//        Object[] previousArray = array;
-
-            for (int i = array.length; i > index; i--) {
-                array[i+1] = array[i];
-            }
-
-        }
-
-        @Override
-        public void delete(int pos) {
-
-        }
-
-        @Override
-        public Object get(int pos) {
-            return null;
-        }
-
-        @Override
-        public void removeFirst() {
-//        Old.MyListNode newFirst = first.getNext();
-//        first.setNext(null);
-//        first = newFirst;
-
-        }
-
-        @Override
-        public Object getFirst() {
-            return null;
-        }
-
-        @Override
-        public int getSize() {
-            return 0;
-        }
-
-//        @Override
-//        public Iterator iterator() {
-//            return null;
-//        }
+    public HANLinkedList() {
+        this.data = new Object[DEFAULT_CAPACITY];
+        this.size = 0;
     }
+
+    @Override
+    public void addFirst(T value) {
+        System.arraycopy(data, 0, data, 1, size);
+        data[0] = value;
+        size++;
+    }
+
+    @Override
+    public void clear() {
+        for (int i = 0; i < size; i++) {
+            data[i] = null;
+        }
+        size = 0;
+    }
+
+    @Override
+    public void insert(int index, T value) {
+        System.arraycopy(data, index, data, index + 1, size - index);
+        data[index] = value;
+        size++;
+    }
+
+    @Override
+    public void delete(int pos) {
+        System.arraycopy(data, pos + 1, data, pos, size - pos - 1);
+        data[--size] = null;
+    }
+
+    @Override
+    public T get(int pos) {
+        return (T) data[pos];
+    }
+
+    @Override
+    public void removeFirst() {
+        if (size == 0) {
+            throw new IllegalStateException("List is empty");
+        }
+        delete(0);
+    }
+
+    @Override
+    public T getFirst() {
+        if (size == 0) {
+            throw new IllegalStateException("List is empty");
+        }
+        return (T) data[0];
+    }
+
+    @Override
+    public int getSize() {
+        return size;
+    }
+}
