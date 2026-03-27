@@ -52,7 +52,7 @@ stylesheet: (variable_assignment | stylerule)* EOF;
 variable_assignment: CAPITAL_IDENT ASSIGNMENT_OPERATOR expression SEMICOLON;
 
 //css rule
-stylerule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE;
+stylerule: (LOWER_IDENT | ID_IDENT | CLASS_IDENT) OPEN_BRACE (declaration | if_clause | variable_assignment)* CLOSE_BRACE;
 
 declaration: property expression SEMICOLON;
 
@@ -67,5 +67,5 @@ add_op: PLUS | MIN;
 mult_op: MUL;
 
 //if statement
-if_clause: IF BOX_BRACKET_OPEN (CAPITAL_IDENT | TRUE | FALSE) BOX_BRACKET_CLOSE OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE else_clause?;
+if_clause: IF BOX_BRACKET_OPEN (CAPITAL_IDENT | TRUE | FALSE) BOX_BRACKET_CLOSE OPEN_BRACE (declaration | if_clause | variable_assignment)* CLOSE_BRACE else_clause?;
 else_clause: ELSE OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE;

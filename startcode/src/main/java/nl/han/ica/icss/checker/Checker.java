@@ -15,36 +15,28 @@ public class Checker {
     public void check(AST ast) {
         variableTypes = new HANLinkedList<>();
         addNewScope();
-        walk(ast.root);
+        walk(ast.root, null);
         removeFirstScope();
     }
 
-    //wip
-
-    //1. loop door de boom
-    //2. check de type van de child
-    //3. is ene varaibel? zet in firsthashmap
-    //4. is ene reference? check de first hashmap
-
-    private void walk(ASTNode node) {
-        if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) {
-            addNewScope();
-        }
+    //TODO een betere naamm..
+    private void walk(ASTNode node, ASTNode parent) {
+        if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) addNewScope();
 
         for (ASTNode child : node.getChildren()) {
-            if (child instanceof VariableAssignment) {
+
+            //zet de variable in de huidige scope
+            if (child instanceof VariableAssignment)
                 addVariableToScope((VariableAssignment) child);
-                checkExpression((child));
-            } else {
-                checkExpression(child);
-            }
 
-            walk(child);
+            //als een variableassigment de parent is, dan moet de reference niet gelezen worden als een echte reference
+            //dit checkt dus of een variabelreference wel een reference is
+            if (!(parent instanceof VariableAssignment) && child instanceof VariableReference)
+                checkVariableReference((VariableReference) child);
+            walk(child, node);
         }
 
-        if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) {
-            removeFirstScope();
-        }
+        if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) removeFirstScope();
     }
 
     private void checkExpression(ASTNode expr) {
