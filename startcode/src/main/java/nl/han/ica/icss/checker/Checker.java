@@ -37,14 +37,24 @@ public class Checker {
             if (child instanceof Operation) checkNoColorInOperation((Operation) child);
 
             //todo bool checks in een if statement
-
+            if (child instanceof IfClause) checkIfStatementCondition((IfClause) child);
         }
 
         if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) removeFirstScope();
     }
 
+    //checkt of een if statement een bool conditie heeft
+    private void checkIfStatementCondition(IfClause ifClause) {
+        //conditie/variabelen uitlezen
+        ExpressionType condition = getExpressionType(ifClause.conditionalExpression);
+
+        if (condition != ExpressionType.BOOL) {
+            ifClause.setError("condition is not boolean: " + condition);
+        }
+    }
+
     private void checkNoColorInOperation(Operation operation) {
-        //de expressiontype wordt uit de linker en rechterkant gehaalt
+        //de expressiontype wordt uit de linker en rechterkant gehaald
         //variable reference wordt dus ook omgezet naar een expression type
         ExpressionType lhs = getExpressionType(operation.lhs);
         ExpressionType rhs = getExpressionType(operation.rhs);
@@ -57,16 +67,6 @@ public class Checker {
         //recursie
         if (operation.lhs instanceof Operation) checkNoColorInOperation((Operation) operation.lhs);
         if (operation.rhs instanceof Operation) checkNoColorInOperation((Operation) operation.rhs);
-    }
-
-
-    private void checkExpression(ASTNode expr) {
-        if (expr instanceof VariableReference) {
-            checkVariableReference((VariableReference) expr);
-        }
-        for (ASTNode child : expr.getChildren()) {
-            checkExpression(child);
-        }
     }
 
     // ------------------- helper functies -------------------
