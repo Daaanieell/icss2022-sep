@@ -14,13 +14,12 @@ public class Checker {
 
     public void check(AST ast) {
         variableTypes = new HANLinkedList<>();
-        addNewScope();
         checkNode(ast.root, null);
-        removeFirstScope();
     }
 
     private void checkNode(ASTNode node, ASTNode parent) {
-        if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) addNewScope();
+        if (node instanceof Stylesheet || node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause)
+            addNewScope();
 
         for (ASTNode child : node.getChildren()) {
             //zet de variable in de huidige scope
@@ -31,16 +30,18 @@ public class Checker {
             //dit checkt dus of een variablereference wel een reference is
             if (!(parent instanceof VariableAssignment) && child instanceof VariableReference)
                 checkVariableReference((VariableReference) child);
-            checkNode(child, node);
 
             //checkt of kleuren in een expression zitten, controleert variabelen en literals
             if (child instanceof Operation) checkNoColorInOperation((Operation) child);
 
             //todo bool checks in een if statement
             if (child instanceof IfClause) checkIfStatementCondition((IfClause) child);
+
+            checkNode(child, node);
         }
 
-        if (node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause) removeFirstScope();
+        if (node instanceof Stylesheet || node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause)
+            addNewScope();
     }
 
     //checkt of een if statement een bool conditie heeft
