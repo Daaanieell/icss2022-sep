@@ -32,9 +32,17 @@ public class Evaluator implements Transform {
             if (child instanceof VariableAssignment va)
                 addVariableToScope(va);
 
+            //variableref naar waarde
+            if (child instanceof Declaration)
+                transformDeclaration((Declaration) child);
+
             //checken van if clause condities
-            if (child instanceof IfClause ifClause)
-                transformIfClause(ifClause, node);
+            if (child instanceof IfClause)
+                transformIfClause((IfClause) child, node);
+
+            //uitrekenen van expressions
+            if (child instanceof Expression)
+                transformExpression((Expression) child);
 
             checkNode(child, node);
         }
@@ -43,12 +51,14 @@ public class Evaluator implements Transform {
             removeFirstScope();
     }
 
+    //TODO dit meot nog expressions kunnen accepteren?
     private void transformIfClause(IfClause ifClause, ASTNode parent) {
         BoolLiteral condition = (BoolLiteral) evaluateExpression(ifClause.conditionalExpression);
 
         if (condition.value) { //alleen de if is true
             for (ASTNode child : new ArrayList<>(ifClause.body)) {
                 parent.addChild(child);
+                parent.removeChild(ifClause);
 
                 //als een ifclause gevonden is, check die
                 if (child instanceof IfClause) transformIfClause((IfClause) child, parent);
@@ -56,6 +66,7 @@ public class Evaluator implements Transform {
         } else if (ifClause.elseClause != null) { //alleen de else is true
             for (ASTNode child : new ArrayList<>(ifClause.elseClause.body)) {
                 parent.addChild(child);
+                parent.removeChild(ifClause);
 
                 //zelfde hier
                 if (child instanceof IfClause) transformIfClause((IfClause) child, parent);
@@ -65,7 +76,12 @@ public class Evaluator implements Transform {
         }
     }
 
+    private void transformDeclaration(Declaration declaration) {
+        declaration.expression = evaluateExpression(declaration.expression);
+    }
+
     private void transformExpression (Expression expression) {
+        System.out.println("expressiont ransfomr: " + expression.getChildren());
         
     }
 

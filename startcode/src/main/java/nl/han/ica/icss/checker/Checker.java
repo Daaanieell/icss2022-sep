@@ -52,6 +52,8 @@ public class Checker {
         if (condition != ExpressionType.BOOL) {
             ifClause.setError("condition is not boolean: " + condition);
         }
+
+        //TODO mogen expressions?? check ch05
     }
 
     private void checkNoColorInOperation(Operation operation) {
