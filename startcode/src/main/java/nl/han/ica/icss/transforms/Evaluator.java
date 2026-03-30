@@ -41,8 +41,8 @@ public class Evaluator implements Transform {
                 transformIfClause((IfClause) child, node);
 
             //uitrekenen van expressions
-            if (child instanceof Expression)
-                transformExpression((Expression) child);
+//            if (child instanceof Operation)
+//                calculateOperation((Operation) child, parent);
 
             checkNode(child, node);
         }
@@ -80,11 +80,13 @@ public class Evaluator implements Transform {
         declaration.expression = evaluateExpression(declaration.expression);
     }
 
-    private void transformExpression (Expression expression) {
-        System.out.println("expressiont ransfomr: " + expression.getChildren());
-        
-    }
-
+//    private void calculateOperation(Operation operation, ASTNode parent) {
+//        Literal lhs = evaluateExpression(operation.lhs);
+//        Literal rhs = evaluateExpression(operation.rhs);
+//        parent.addChild(operation.calc(lhs, rhs));
+//        parent.removeChild(operation);
+//
+//    }
 
 
 
@@ -100,6 +102,13 @@ public class Evaluator implements Transform {
         if (expression instanceof VariableReference) {
             return getLiteralFromScope(((VariableReference) expression).name);
         }
+
+        if (expression instanceof Operation op) {
+            Literal lhs = evaluateExpression(op.lhs);
+            Literal rhs = evaluateExpression(op.rhs);
+            return op.calc(lhs, rhs);
+        }
+
 
         return null;
     }

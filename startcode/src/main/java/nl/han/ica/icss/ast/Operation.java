@@ -26,4 +26,8 @@ public abstract class Operation extends Expression {
         }
         return this;
     }
+
+    public abstract Literal calc(Literal lhs, Literal rhs);
+
+
 }
