@@ -115,7 +115,7 @@ public class ASTListener extends ICSSBaseListener {
 	@Override
 	public void exitExpression(ICSSParser.ExpressionContext ctx) {
 		// dit checkt hoeveel '+' en '-' er zijn. zorgt ervoor dat meerdere sommen in dezelfde regel herkent worden
-		for (int expressions = 0; expressions < ctx.add_op().size(); expressions++) {
+		for (int expressions = ctx.add_op().size() - 1; expressions >= 0; expressions--) { //de loop is omgekeerd, anders is de rekenvolgorde fout..
 			ASTNode right = currentContainer.pop();
 			ASTNode left = currentContainer.pop();
 
@@ -137,7 +137,7 @@ public class ASTListener extends ICSSBaseListener {
 	@Override
 	public void exitTerm(ICSSParser.TermContext ctx) {
 		//zelfde als bij exitexpression, checkt voor nu alleen nog keersommen
-		for (int expressions = 0; expressions < ctx.mult_op().size(); expressions++) {
+		for (int expressions = ctx.mult_op().size() - 1; expressions >= 0; expressions--) {
 			ASTNode right = currentContainer.pop();
 			ASTNode left = currentContainer.pop();
 

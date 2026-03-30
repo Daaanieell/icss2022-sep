@@ -7,6 +7,7 @@ import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 
 public class SubtractOperation extends Operation {
+    OperationHelper oh = new OperationHelper();
 
     @Override
     public String getNodeLabel() {
@@ -15,12 +16,17 @@ public class SubtractOperation extends Operation {
 
     @Override
     public Literal calc(Literal lhs, Literal rhs) {
-        if (lhs instanceof PixelLiteral && rhs instanceof PixelLiteral)
-            return new PixelLiteral(((PixelLiteral) lhs).value - ((PixelLiteral) rhs).value);
-        if (lhs instanceof PercentageLiteral && rhs instanceof PercentageLiteral)
-            return new PercentageLiteral(((PercentageLiteral)lhs).value - ((PercentageLiteral) rhs).value);
-        if (lhs instanceof ScalarLiteral && rhs instanceof ScalarLiteral)
-            return new ScalarLiteral(((ScalarLiteral)lhs).value - ((ScalarLiteral) rhs).value);
-        return null;
+        int lhsValue = oh.getValue(lhs);
+        int rhsValue = oh.getValue(rhs);
+        int sum = lhsValue - rhsValue;
+
+        if (lhs instanceof  PixelLiteral || rhs instanceof PixelLiteral) //pixel
+            return new PixelLiteral(sum);
+        if (lhs instanceof  PercentageLiteral || rhs instanceof PercentageLiteral) //percentage
+            return new PercentageLiteral(sum);
+        if (lhs instanceof  ScalarLiteral || rhs instanceof ScalarLiteral) //scalar
+            return new ScalarLiteral(sum);
+
+        throw new RuntimeException("add calc broke with lhs: " + lhsValue + ", rhs: " + rhsValue);
     }
 }

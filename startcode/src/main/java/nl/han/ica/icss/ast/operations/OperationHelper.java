@@ -7,7 +7,7 @@ import nl.han.ica.icss.ast.literals.ScalarLiteral;
 
 public class OperationHelper {
 
-    private int getValue(Literal literal) {
+    public int getValue(Literal literal) {
         if (literal instanceof PixelLiteral pixelLiteral)      return pixelLiteral.value;
         if (literal instanceof PercentageLiteral percentageLiteral) return percentageLiteral.value;
         if (literal instanceof ScalarLiteral scalarLiteral)      return scalarLiteral.value;

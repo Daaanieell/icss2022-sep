@@ -34,7 +34,6 @@ public class Checker {
             //checkt of kleuren in een expression zitten, controleert variabelen en literals
             if (child instanceof Operation) checkNoColorInOperation((Operation) child);
 
-            //todo bool checks in een if statement
             if (child instanceof IfClause) checkIfStatementCondition((IfClause) child);
 
             checkNode(child, node);
