@@ -41,7 +41,8 @@ MIN: '-';
 MUL: '*';
 ASSIGNMENT_OPERATOR: ':=';
 
-
+//toevoeging:
+DIV: '/';
 
 
 //--- PARSER: ---
@@ -64,7 +65,7 @@ term: factor (mult_op factor)*;
 factor: LOWER_IDENT | CAPITAL_IDENT | COLOR | PIXELSIZE | PERCENTAGE | SCALAR | TRUE | FALSE;
 
 add_op: PLUS | MIN;
-mult_op: MUL;
+mult_op: MUL | DIV;
 
 //if statement
 if_clause: IF BOX_BRACKET_OPEN (CAPITAL_IDENT | TRUE | FALSE) BOX_BRACKET_CLOSE OPEN_BRACE (declaration | if_clause | variable_assignment)* CLOSE_BRACE else_clause?;

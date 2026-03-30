@@ -6,27 +6,27 @@ import nl.han.ica.icss.ast.literals.PercentageLiteral;
 import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 
-public class SubtractOperation extends Operation {
+public class DivideOperation extends Operation {
     OperationHelper oh = new OperationHelper();
 
     @Override
     public String getNodeLabel() {
-        return "Subtract";
+        return "Divide";
     }
 
     @Override
     public Literal calc(Literal lhs, Literal rhs) {
         int lhsValue = oh.getValue(lhs);
         int rhsValue = oh.getValue(rhs);
-        int sum = lhsValue - rhsValue;
+        int sum = lhsValue / rhsValue;
 
-        if (lhs instanceof  PixelLiteral || rhs instanceof PixelLiteral) //pixel
+        if (lhs instanceof PixelLiteral || rhs instanceof PixelLiteral) //pixel
             return new PixelLiteral(sum);
-        if (lhs instanceof  PercentageLiteral || rhs instanceof PercentageLiteral) //percentage
+        if (lhs instanceof PercentageLiteral || rhs instanceof PercentageLiteral) //percentage
             return new PercentageLiteral(sum);
-        if (lhs instanceof  ScalarLiteral || rhs instanceof ScalarLiteral) //scalar
+        if (lhs instanceof ScalarLiteral || rhs instanceof ScalarLiteral) //scalar
             return new ScalarLiteral(sum);
 
-        throw new RuntimeException("sub calc broke with lhs: " + lhsValue + ", rhs: " + rhsValue);
+        throw new RuntimeException("div calc broke with lhs: " + lhsValue + ", rhs: " + rhsValue);
     }
 }

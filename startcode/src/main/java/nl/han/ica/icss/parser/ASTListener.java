@@ -5,6 +5,7 @@ import nl.han.ica.datastructures.IHANStack;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
 import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.DivideOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.selectors.ClassSelector;
@@ -114,41 +115,54 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitExpression(ICSSParser.ExpressionContext ctx) {
-		// dit checkt hoeveel '+' en '-' er zijn. zorgt ervoor dat meerdere sommen in dezelfde regel herkent worden
-		for (int expressions = ctx.add_op().size() - 1; expressions >= 0; expressions--) { //de loop is omgekeerd, anders is de rekenvolgorde fout..
-			ASTNode right = currentContainer.pop();
-			ASTNode left = currentContainer.pop();
+		int size = ctx.add_op().size();
+		ASTNode[] factors = new ASTNode[size + 1]; //ophalen van alle factors van de huidige som
+		for (int i = size; i >= 0; i--) {
+			factors[i] = currentContainer.pop();
+		}
 
-			//checken welk type een som is en dat op de stack zetten met zijn left/right waardes
-			if (ctx.add_op(expressions).PLUS() != null) {
-				AddOperation addOperation = new AddOperation();
-				addOperation.addChild(left);
-				addOperation.addChild(right);
-				currentContainer.push(addOperation);
-			} else if (ctx.add_op(expressions).MIN() != null) {
+		ASTNode result = factors[0]; //dit houdt de vorige som bij
+		for (int i = 0; i < size; i++) { //voor elke som een operation maken
+			if (ctx.add_op(i).PLUS() != null) {
+				AddOperation addOperation = new AddOperation(); //de vorige nested som = linkerkant van de huidige som
+				addOperation.addChild(result);
+				addOperation.addChild(factors[i + 1]);
+				result = addOperation;
+			} else if (ctx.add_op(i).MIN() != null) {
 				SubtractOperation subtractOperation = new SubtractOperation();
-				subtractOperation.addChild(left);
-				subtractOperation.addChild(right);
-				currentContainer.push(subtractOperation);
+				subtractOperation.addChild(result);
+				subtractOperation.addChild(factors[i + 1]);
+				result = subtractOperation;
 			}
 		}
+		currentContainer.push(result);
 	}
 
 	@Override
 	public void exitTerm(ICSSParser.TermContext ctx) {
-		//zelfde als bij exitexpression, checkt voor nu alleen nog keersommen
-		for (int expressions = ctx.mult_op().size() - 1; expressions >= 0; expressions--) {
-			ASTNode right = currentContainer.pop();
-			ASTNode left = currentContainer.pop();
+		//zelfde als bij exitexpression
 
-			//TODO: deelsommen toevoegen?
-			if (ctx.mult_op(expressions).MUL() != null) {
+		int size = ctx.mult_op().size();
+		ASTNode[] factors = new ASTNode[size + 1];
+		for (int i = size; i >= 0; i--) {
+			factors[i] = currentContainer.pop();
+		}
+
+		ASTNode result = factors[0];
+		for (int i = 0; i < size; i++) {
+			if (ctx.mult_op(i).MUL() != null) {
 				MultiplyOperation multiplyOperation = new MultiplyOperation();
-				multiplyOperation.addChild(left);
-				multiplyOperation.addChild(right);
-				currentContainer.push(multiplyOperation);
+				multiplyOperation.addChild(result);
+				multiplyOperation.addChild(factors[i + 1]);
+				result = multiplyOperation;
+			} else if (ctx.mult_op(i).DIV() != null) {
+				DivideOperation divideOperation = new DivideOperation();
+				divideOperation.addChild(result);
+				divideOperation.addChild(factors[i + 1]);
+				result = divideOperation;
 			}
 		}
+		currentContainer.push(result);
 	}
 
 	@Override

@@ -40,10 +40,6 @@ public class Evaluator implements Transform {
             if (child instanceof IfClause)
                 transformIfClause((IfClause) child, node);
 
-            //uitrekenen van expressions
-//            if (child instanceof Operation)
-//                calculateOperation((Operation) child, parent);
-
             checkNode(child, node);
         }
 
@@ -80,16 +76,6 @@ public class Evaluator implements Transform {
         declaration.expression = evaluateExpression(declaration.expression);
     }
 
-//    private void calculateOperation(Operation operation, ASTNode parent) {
-//        Literal lhs = evaluateExpression(operation.lhs);
-//        Literal rhs = evaluateExpression(operation.rhs);
-//        parent.addChild(operation.calc(lhs, rhs));
-//        parent.removeChild(operation);
-//
-//    }
-
-
-
     // ------------------- helper functies -------------------
 
     private Literal evaluateExpression(Expression expression) {
@@ -103,12 +89,15 @@ public class Evaluator implements Transform {
             return getLiteralFromScope(((VariableReference) expression).name);
         }
 
+        //uitrekenen van sommen
         if (expression instanceof Operation op) {
+            //dit checkt recursief voor sommen binnen de linker/rechterhelft
             Literal lhs = evaluateExpression(op.lhs);
             Literal rhs = evaluateExpression(op.rhs);
+
+            //uitrekenen!
             return op.calc(lhs, rhs);
         }
-
 
         return null;
     }

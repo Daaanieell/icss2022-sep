@@ -26,7 +26,7 @@ public class MultiplyOperation extends Operation {
         if (lhs instanceof  ScalarLiteral || rhs instanceof ScalarLiteral) //scalar
             return new ScalarLiteral(sum);
 
-        throw new RuntimeException("add calc broke with lhs: " + lhsValue + ", rhs: " + rhsValue);
+        throw new RuntimeException("mult calc broke with lhs: " + lhsValue + ", rhs: " + rhsValue);
     }
 
 }
