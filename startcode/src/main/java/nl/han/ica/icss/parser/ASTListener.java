@@ -48,7 +48,7 @@ public class ASTListener extends ICSSBaseListener {
 	public void enterStylerule(ICSSParser.StyleruleContext ctx) {
 		Stylerule stylerule = new Stylerule();
 
-		//checks op welk soort stylerule het is
+		//checks op welk soort selector het is
 		if (ctx.LOWER_IDENT() != null) {
 			stylerule.addChild(new TagSelector(ctx.LOWER_IDENT().getText()));
 		} else if (ctx.ID_IDENT() != null) {
@@ -62,7 +62,6 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitStylerule(ICSSParser.StyleruleContext ctx) {
-		//
 		ASTNode stylerule = currentContainer.pop();
 		ASTNode parent = currentContainer.peek();
 		parent.addChild(stylerule);
@@ -88,7 +87,6 @@ public class ASTListener extends ICSSBaseListener {
 
 	// -------------------------------------- property en declaration --------------------------------------
 
-
 	@Override
 	public void enterDeclaration(ICSSParser.DeclarationContext ctx) {
 		currentContainer.push(new Declaration());
@@ -103,6 +101,7 @@ public class ASTListener extends ICSSBaseListener {
 		parent.addChild(declaration);
 	}
 
+	//een property is een leaf, dus is het niet nodig om het op de stack te zetten
 	@Override
 	public void exitProperty(ICSSParser.PropertyContext ctx) {
 		ASTNode parent = currentContainer.peek();
@@ -111,7 +110,6 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	// -------------------------------------- expressions --------------------------------------
-
 
 	@Override
 	public void exitExpression(ICSSParser.ExpressionContext ctx) {
@@ -193,8 +191,11 @@ public class ASTListener extends ICSSBaseListener {
 	public void enterIf_clause(ICSSParser.If_clauseContext ctx) {
 		IfClause ifClause = new IfClause();
 
-		//dit zijn de waardes binnen '( )'
-		if (ctx.CAPITAL_IDENT() != null) {
+		//dit zijn de waardes binnen '[ ]' van een ifclause
+		if (ctx.expression() != null) {
+			ASTNode expr = currentContainer.pop();
+			ifClause.addChild(expr);
+		} else if (ctx.CAPITAL_IDENT() != null) {
 			ifClause.addChild(new VariableReference(ctx.CAPITAL_IDENT().getText()));
 		} else if (ctx.TRUE() != null) {
 			ifClause.addChild(new BoolLiteral(true));

@@ -68,5 +68,5 @@ add_op: PLUS | MIN;
 mult_op: MUL | DIV;
 
 //if statement
-if_clause: IF BOX_BRACKET_OPEN (CAPITAL_IDENT | TRUE | FALSE) BOX_BRACKET_CLOSE OPEN_BRACE (declaration | if_clause | variable_assignment)* CLOSE_BRACE else_clause?;
+if_clause: IF BOX_BRACKET_OPEN (CAPITAL_IDENT | TRUE | FALSE | expression) BOX_BRACKET_CLOSE OPEN_BRACE (declaration | if_clause | variable_assignment)* CLOSE_BRACE else_clause?;
 else_clause: ELSE OPEN_BRACE (declaration | if_clause)* CLOSE_BRACE;

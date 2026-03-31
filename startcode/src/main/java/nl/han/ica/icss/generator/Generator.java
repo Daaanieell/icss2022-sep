@@ -8,8 +8,6 @@ import nl.han.ica.icss.ast.literals.PixelLiteral;
 import nl.han.ica.icss.ast.literals.ScalarLiteral;
 
 public class Generator {
-
-	//TODO https://www.geeksforgeeks.org/java/stringbuilder-class-in-java-with-examples/
 	StringBuilder sb = new StringBuilder();
 
 	public String generate(AST ast) {

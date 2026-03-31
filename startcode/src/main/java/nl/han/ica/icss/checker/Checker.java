@@ -4,6 +4,9 @@ import nl.han.ica.datastructures.HANLinkedList;
 import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.HashMap;
@@ -18,21 +21,24 @@ public class Checker {
     }
 
     private void checkNode(ASTNode node, ASTNode parent) {
+        //scope toevoegen bij iets wat kinderen kan hebben
         if (node instanceof Stylesheet || node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause)
             addNewScope();
 
         for (ASTNode child : node.getChildren()) {
             //zet de variable in de huidige scope
-            if (child instanceof VariableAssignment)
+            if (child instanceof VariableAssignment) {
+                isPropertyValid((VariableAssignment) child);
                 addVariableToScope((VariableAssignment) child);
+            }
 
             //als een variableassigment de parent is, dan moet de reference niet gelezen worden als een echte reference
             //dit checkt dus of een variablereference wel een reference is
             if (!(parent instanceof VariableAssignment) && child instanceof VariableReference)
                 checkVariableReference((VariableReference) child);
 
-            //checkt of kleuren in een expression zitten, controleert variabelen en literals
-            if (child instanceof Operation) checkNoColorInOperation((Operation) child);
+            //checkt of inhoud van rekensom wel mag (px + px en niet px + %)
+            if (child instanceof Operation) checkOperationTypes((Operation) child);
 
             if (child instanceof IfClause) checkIfStatementCondition((IfClause) child);
 
@@ -43,7 +49,16 @@ public class Checker {
             addNewScope();
     }
 
+    public void isPropertyValid(VariableAssignment variableAssignment) {
+        if (variableAssignment.expression instanceof ScalarLiteral)
+            variableAssignment.setError("scalar is ongeldige type variabel");
+
+    }
+
     //checkt of een if statement een bool conditie heeft
+
+    //note: volgens ch05 was het niet nodig dat een expression geëvalueerd moest worden?
+    // voor nu is het puur checken op bools of variabelen die bools zijn
     private void checkIfStatementCondition(IfClause ifClause) {
         //conditie/variabelen uitlezen
         ExpressionType condition = getExpressionType(ifClause.conditionalExpression);
@@ -51,8 +66,11 @@ public class Checker {
         if (condition != ExpressionType.BOOL) {
             ifClause.setError("condition is not boolean: " + condition);
         }
-
-        //TODO mogen expressions?? check ch05
+    }
+    private void checkOperationTypes(Operation op) {
+        checkNoColorInOperation(op);
+        checkAddSubtractTypes(op);
+        checkMultiplyTypes(op);
     }
 
     private void checkNoColorInOperation(Operation operation) {
@@ -71,6 +89,37 @@ public class Checker {
         if (operation.rhs instanceof Operation) checkNoColorInOperation((Operation) operation.rhs);
     }
 
+    //zelfde als bij nocolorinoperation
+    private void checkAddSubtractTypes(Operation operation) {
+        ExpressionType lhs = getExpressionType(operation.lhs);
+        ExpressionType rhs = getExpressionType(operation.rhs);
+
+        if (operation instanceof AddOperation || operation instanceof SubtractOperation) {
+            if (lhs == ExpressionType.PIXEL && rhs != ExpressionType.PIXEL
+                    || lhs == ExpressionType.PERCENTAGE && rhs != ExpressionType.PERCENTAGE) {
+                operation.setError("ongeldige optelwaardes, lhs: " + lhs + " en rhs: " + rhs);
+            }
+        }
+
+        if (operation.lhs instanceof Operation) checkAddSubtractTypes((Operation) operation.lhs);
+        if (operation.rhs instanceof Operation) checkAddSubtractTypes((Operation) operation.rhs);
+    }
+
+
+    //zelfde als bij nocolorinoperation
+    private void checkMultiplyTypes(Operation operation) {
+        ExpressionType lhs = getExpressionType(operation.lhs);
+        ExpressionType rhs = getExpressionType(operation.rhs);
+
+        if (operation instanceof MultiplyOperation) {
+            boolean hasScalar = lhs == ExpressionType.SCALAR || rhs == ExpressionType.SCALAR;
+            if (!hasScalar) operation.setError("vermenigvulden ontbreekt scalar, lhs: " + lhs + " en rhs: " + rhs);
+        }
+
+        if (operation.lhs instanceof Operation) checkMultiplyTypes((Operation) operation.lhs);
+        if (operation.rhs instanceof Operation) checkMultiplyTypes((Operation) operation.rhs);
+    }
+
     // ------------------- helper functies -------------------
 
     //expressiontype uit een waarde halen, hiermee kunnen checks uitgevoerd worden op een waarde
@@ -84,6 +133,11 @@ public class Checker {
         if (expression instanceof VariableReference) {
             VariableReference ref = (VariableReference) expression;
             return getTypeFromScope(ref.name);
+        }
+
+        //dit zet sommen om naar een expressiontype, de lhs is 'leidend' hierin
+        if (expression instanceof Operation operation) {
+            return getExpressionType(operation.lhs);
         }
 
         return ExpressionType.UNDEFINED;
@@ -108,11 +162,31 @@ public class Checker {
 
     //zet een waarde in de huidige scope (de nieuwste hashmap die toegevoegd wordt)
     private void addVariableToScope(VariableAssignment variableAssignment) {
+        didVariableTypeChange(variableAssignment);
+
         HashMap<String, ExpressionType> map = getFirstScope();
         String name = variableAssignment.name.name;
         ExpressionType type = getExpressionType((Expression) variableAssignment.expression);
         map.put(name, type);
     }
+
+
+    //variabelen mogen niet van type veranderen: Var := 5px --X-> Var := 50%
+    private void didVariableTypeChange(VariableAssignment variableAssignment) {
+        String key = variableAssignment.name.name;
+
+        if (!searchVariable(key)) return; // de variabele is nieuw
+
+        ExpressionType previousType = getTypeFromScope(key);
+        ExpressionType newType = getExpressionType( variableAssignment.expression);
+
+        //vergelijken van expressiontype
+        if (previousType != newType)
+            variableAssignment.setError(
+                    key + " krijgt een waarde met ongeldig type, vorige: " + previousType + ", nieuwe: " + newType
+            );
+    }
+
 
     //check of een variable bestaat
     private boolean searchVariable(String key) {
@@ -121,6 +195,7 @@ public class Checker {
         }
         return false;
     }
+
 
     private void addNewScope() {
         variableTypes.addFirst(new HashMap<>());
