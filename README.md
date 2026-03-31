@@ -1,4 +1,4 @@
-> Zie [implementatie en toevoegingen](./implementatie-en-toevoegingen)
+> Zie [implementatie en toevoegingen](./implementatie-en-toevoegingen.md)
 
 # Readme for ICSSTool
 
