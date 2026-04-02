@@ -26,27 +26,17 @@ public class Checker {
             addNewScope();
 
         for (ASTNode child : node.getChildren()) {
-            //zet de variable in de huidige scope
-            if (child instanceof VariableAssignment) {
-                isPropertyValid((VariableAssignment) child);
-                addVariableToScope((VariableAssignment) child);
-            }
 
-            //als een variableassigment de parent is, dan moet de reference niet gelezen worden als een echte reference
-            //dit checkt dus of een variablereference wel een reference is
-            if (!(parent instanceof VariableAssignment) && child instanceof VariableReference)
-                checkVariableReference((VariableReference) child);
-
-            //checkt of inhoud van rekensom wel mag (px + px en niet px + %)
+            //checks op type node
+            if (child instanceof VariableAssignment) { isPropertyValid((VariableAssignment) child); addVariableToScope((VariableAssignment) child); }
+            if (child instanceof VariableReference && !(parent instanceof VariableAssignment)) checkVariableReference((VariableReference) child);
             if (child instanceof Operation) checkOperationTypes((Operation) child);
-
             if (child instanceof IfClause) checkIfStatementCondition((IfClause) child);
-
             checkNode(child, node);
         }
 
         if (node instanceof Stylesheet || node instanceof Stylerule || node instanceof IfClause || node instanceof ElseClause)
-            addNewScope();
+            removeFirstScope();
     }
 
     public void isPropertyValid(VariableAssignment variableAssignment) {
@@ -85,8 +75,8 @@ public class Checker {
         }
 
         //recursie
-        if (operation.lhs instanceof Operation) checkNoColorInOperation((Operation) operation.lhs);
-        if (operation.rhs instanceof Operation) checkNoColorInOperation((Operation) operation.rhs);
+        if (operation.lhs instanceof Operation operationLhs) checkNoColorInOperation(operationLhs);
+        if (operation.rhs instanceof Operation operationRhs) checkNoColorInOperation(operationRhs);
     }
 
     //zelfde als bij nocolorinoperation
@@ -101,8 +91,8 @@ public class Checker {
             }
         }
 
-        if (operation.lhs instanceof Operation) checkAddSubtractTypes((Operation) operation.lhs);
-        if (operation.rhs instanceof Operation) checkAddSubtractTypes((Operation) operation.rhs);
+        if (operation.lhs instanceof Operation operationLhs) checkAddSubtractTypes(operationLhs);
+        if (operation.rhs instanceof Operation operationRhs) checkAddSubtractTypes(operationRhs);
     }
 
 
@@ -116,31 +106,24 @@ public class Checker {
             if (!hasScalar) operation.setError("vermenigvulden ontbreekt scalar, lhs: " + lhs + " en rhs: " + rhs);
         }
 
-        if (operation.lhs instanceof Operation) checkMultiplyTypes((Operation) operation.lhs);
-        if (operation.rhs instanceof Operation) checkMultiplyTypes((Operation) operation.rhs);
+        if (operation.lhs instanceof Operation operationLhs) checkMultiplyTypes(operationLhs);
+        if (operation.rhs instanceof Operation operationRhs) checkMultiplyTypes(operationRhs);
     }
 
     // ------------------- helper functies -------------------
 
     //expressiontype uit een waarde halen, hiermee kunnen checks uitgevoerd worden op een waarde
     private ExpressionType getExpressionType(Expression expression) {
-        if (expression instanceof ColorLiteral)     return ExpressionType.COLOR;
-        if (expression instanceof PixelLiteral)     return ExpressionType.PIXEL;
-        if (expression instanceof PercentageLiteral) return ExpressionType.PERCENTAGE;
-        if (expression instanceof ScalarLiteral)    return ExpressionType.SCALAR;
-        if (expression instanceof BoolLiteral)      return ExpressionType.BOOL;
-
-        if (expression instanceof VariableReference) {
-            VariableReference ref = (VariableReference) expression;
-            return getTypeFromScope(ref.name);
-        }
-
-        //dit zet sommen om naar een expressiontype, de lhs is 'leidend' hierin
-        if (expression instanceof Operation operation) {
-            return getExpressionType(operation.lhs);
-        }
-
-        return ExpressionType.UNDEFINED;
+        return switch (expression) {
+            case ColorLiteral colorLiteral                 -> ExpressionType.COLOR;
+            case PixelLiteral pixelLiteral                 -> ExpressionType.PIXEL;
+            case PercentageLiteral percentageLiteral       -> ExpressionType.PERCENTAGE;
+            case ScalarLiteral scalarLiteral               -> ExpressionType.SCALAR;
+            case BoolLiteral boolLiteral                   -> ExpressionType.BOOL;
+            case VariableReference variableReference       -> getTypeFromScope(variableReference.name);
+            case Operation operation                       -> getExpressionType(operation.lhs);
+            default                                        -> throw new RuntimeException("onbekende expression: " + expression);
+        };
     }
 
     //een variabel expressiontype uit de scope halen

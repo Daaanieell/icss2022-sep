@@ -10,6 +10,7 @@ Eisen:
 - 4.2 Parseren: alles
 - 4.3 Checken: CH00, CH01, CH03, CH05 en CH06
 - 4.4 Transformeren: alles
+- 4.5 Genereren: alles
 - 4.6 zie [toevoegingen](#toevoegingen)
 
 ## Toevoegingen

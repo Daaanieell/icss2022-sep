@@ -16,13 +16,12 @@ public class Generator {
 
 	private String createCSS(AST ast) {
 		generateStylesheet(ast.root);
-		System.out.println(sb.toString());
 		return sb.toString();
 	}
 
 	private void generateStylesheet(Stylesheet stylesheet) {
-		for (ASTNode rule : stylesheet.body) {
-			if (rule instanceof Stylerule) generateStylerule((Stylerule) rule);
+		for (ASTNode child : stylesheet.body) {
+			if (child instanceof Stylerule stylerule) generateStylerule(stylerule);
 		}
 	}
 
@@ -32,8 +31,8 @@ public class Generator {
 		sb.append(selector)
 			.append(" {\n");
 
-		for (ASTNode declaration : stylerule.body) {
-			if (declaration instanceof Declaration) generateDeclaration((Declaration) declaration);
+		for (ASTNode child : stylerule.body) {
+			if (child instanceof Declaration declaration) generateDeclaration(declaration);
 		}
 
 		sb.append("}\n\n");
@@ -46,7 +45,7 @@ public class Generator {
 			.append(declaration.property.name)
 			.append(": ")
 			.append(literalToString(expression))
-			.append("; \n");
+			.append(";\n");
 	}
 
 	private String literalToString(Expression expression) {

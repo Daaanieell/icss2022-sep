@@ -28,18 +28,10 @@ public class Evaluator implements Transform {
             addNewScope();
 
         for (ASTNode child : node.getChildren()) {
-            //waardes opslaan van variabelen
-            if (child instanceof VariableAssignment va)
-                addVariableToScope(va);
-
-            //variableref naar waarde
-            if (child instanceof Declaration)
-                transformDeclaration((Declaration) child);
-
-            //checken van if clause condities
-            if (child instanceof IfClause)
-                transformIfClause((IfClause) child, node);
-
+            //checks op type node
+            if (child instanceof VariableAssignment variableAssignment) addVariableToScope(variableAssignment);
+            if (child instanceof Declaration declaration) transformDeclaration(declaration);
+            if (child instanceof IfClause ifClause) transformIfClause(ifClause, node);
             checkNode(child, node);
         }
 
@@ -47,12 +39,12 @@ public class Evaluator implements Transform {
             removeFirstScope();
     }
 
-    //TODO dit meot nog expressions kunnen accepteren?
     private void transformIfClause(IfClause ifClause, ASTNode parent) {
         BoolLiteral condition = (BoolLiteral) evaluateExpression(ifClause.conditionalExpression);
 
+        ArrayList<ASTNode> body = condition.value ? ifClause.body : ifClause.elseClause.body;
         if (condition.value) { //alleen de if is true
-            for (ASTNode child : new ArrayList<>(ifClause.body)) {
+            for (ASTNode child : body) {
                 parent.addChild(child);
                 parent.removeChild(ifClause);
 
@@ -60,14 +52,14 @@ public class Evaluator implements Transform {
                 if (child instanceof IfClause) transformIfClause((IfClause) child, parent);
             }
         } else if (ifClause.elseClause != null) { //alleen de else is true
-            for (ASTNode child : new ArrayList<>(ifClause.elseClause.body)) {
+            for (ASTNode child : body) {
                 parent.addChild(child);
                 parent.removeChild(ifClause);
 
                 //zelfde hier
                 if (child instanceof IfClause) transformIfClause((IfClause) child, parent);
             }
-        } else if (ifClause.elseClause == null) { // er is geen if of else en de conditie is altijd false
+        } else if (ifClause.elseClause == null) { // er is geen else en de conditie is altijd false
             parent.removeChild(ifClause);
         }
     }
@@ -79,27 +71,16 @@ public class Evaluator implements Transform {
     // ------------------- helper functies -------------------
 
     private Literal evaluateExpression(Expression expression) {
-        if (expression instanceof ColorLiteral)      return (ColorLiteral) expression;
-        if (expression instanceof PixelLiteral)      return (PixelLiteral) expression;
-        if (expression instanceof PercentageLiteral) return (PercentageLiteral) expression;
-        if (expression instanceof ScalarLiteral)     return (ScalarLiteral) expression;
-        if (expression instanceof BoolLiteral)       return (BoolLiteral) expression;
-
-        if (expression instanceof VariableReference) {
-            return getLiteralFromScope(((VariableReference) expression).name);
-        }
-
-        //uitrekenen van sommen
-        if (expression instanceof Operation op) {
-            //dit checkt recursief voor sommen binnen de linker/rechterhelft
-            Literal lhs = evaluateExpression(op.lhs);
-            Literal rhs = evaluateExpression(op.rhs);
-
-            //uitrekenen!
-            return op.calc(lhs, rhs);
-        }
-
-        return null;
+        return switch (expression) {
+            case ColorLiteral colorLiteral                 -> colorLiteral;
+            case PixelLiteral pixelLiteral                 -> pixelLiteral;
+            case PercentageLiteral percentageLiteral       -> percentageLiteral;
+            case ScalarLiteral scalarLiteral               -> scalarLiteral;
+            case BoolLiteral boolLiteral                   -> boolLiteral;
+            case VariableReference variableReference       -> getLiteralFromScope(variableReference.name);
+            case Operation operation                       -> operation.calc(evaluateExpression(operation.lhs), evaluateExpression(operation.rhs));
+            default                                        -> throw new RuntimeException("onbekende expression: " + expression);
+        };
     }
 
     private Literal getLiteralFromScope(String name) {
@@ -112,7 +93,7 @@ public class Evaluator implements Transform {
     }
 
     private void addVariableToScope(VariableAssignment va) {
-        Literal value = evaluateExpression((Expression) va.expression);
+        Literal value = evaluateExpression(va.expression);
         variableValues.getFirst().put(va.name.name, value);
     }
 

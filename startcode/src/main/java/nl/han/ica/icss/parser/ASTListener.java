@@ -166,6 +166,7 @@ public class ASTListener extends ICSSBaseListener {
 	@Override
 	public void exitFactor(ICSSParser.FactorContext ctx) {
 		//checkt voor iedere soort literal, zet die op de stack als er een match is
+
 		if (ctx.PIXELSIZE() != null) {
 			currentContainer.push(new PixelLiteral(ctx.PIXELSIZE().getText()));
 		} else if (ctx.PERCENTAGE() != null) {
