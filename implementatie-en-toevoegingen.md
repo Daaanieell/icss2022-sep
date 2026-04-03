@@ -20,7 +20,16 @@ Hier wordt omschreven wat toegevoegd werd dat buiten de casus valt, samen met li
 - Variabelen mogen niet van type veranderen
     - Checker: [`startcode/src/main/java/nl/han/ica/icss/checker/Checker.java`](startcode/src/main/java/nl/han/ica/icss/checker/Checker.java)
 
+```css
+ParWidth := 500px;
+ParWidth := 42%; <- niet toegestaan!
+```
+
 - Deelsommen
     - Divide: [`startcode/src/main/java/nl/han/ica/icss/ast/operations/DivideOperation.java`](startcode/src/main/java/nl/han/ica/icss/ast/operations/DivideOperation.java)
     - Parser: [`startcode/src/main/java/nl/han/ica/icss/parser/ASTListener.java`](startcode/src/main/java/nl/han/ica/icss/parser/ASTListener.java)
     - Grammatica: [`startcode/src/main/antlr4/nl/han/ica/icss/parser/ICSS.g4`](startcode/src/main/antlr4/nl/han/ica/icss/parser/ICSS.g4)
+
+```css
+ParWidth := 500px / 2;
+```
